@@ -3,10 +3,13 @@ from python_speech_features import mfcc
 import scipy.io.wavfile as wav
 from fastdtw import fastdtw
 from multiprocessing import Pool
+from pydub import AudioSegment
 import time
 
-def extract_mfcc(audio_file):
-    (rate, sig) = wav.read(audio_file)
+def extract_mfcc(audio_file, wav_file):
+    track = AudioSegment.from_file(audio_file, format='m4a')
+    file_handle = track.export(wav_file, format='wav')
+    (rate, sig) = wav.read(wav_file)
     features = mfcc(sig, rate)
     return features
 
@@ -84,19 +87,19 @@ def fast_predict(input_data, template_data):
 
 if __name__ == '__main__':
     template_data = {
-        'halo': extract_mfcc('templates/halo.wav'),
-        'saya': extract_mfcc('templates/saya.wav'),
-        'a': extract_mfcc('templates/halo.wav'),
-        'b': extract_mfcc('templates/saya.wav'),
-        'c': extract_mfcc('templates/halo.wav'),
-        'd': extract_mfcc('templates/saya.wav'),
-        'e': extract_mfcc('templates/halo.wav'),
-        'f': extract_mfcc('templates/saya.wav'),
-        'g': extract_mfcc('templates/halo.wav'),
-        'h': extract_mfcc('templates/saya.wav'),
+        'bandung': extract_mfcc('templates/Template/Bandung.m4a', 'templates/bandung.wav'),
+        'semarang': extract_mfcc('templates/Template/Semarang.m4a', 'templates/semarang.wav'),
+        'palembang': extract_mfcc('templates/Template/Palembang.m4a', 'templates/palembang.wav'),
+        'medan': extract_mfcc('templates/Template/Medan.m4a', 'templates/medan.wav'),
+        'banjarmasin': extract_mfcc('templates/Template/Banjarmasin.m4a', 'templates/banjarmasin.wav'),
+        'palangkaraya': extract_mfcc('templates/Template/Palangkaraya.m4a', 'templates/palangkaraya.wav'),
+        'manado': extract_mfcc('templates/Template/Manado.m4a', 'templates/manado.wav'),
+        'kendari': extract_mfcc('templates/Template/Kendari.m4a', 'templates/kendari.wav'),
+        'fakfak': extract_mfcc('templates/Template/Fakfak.m4a', 'templates/fakfak.wav'),
+        'ternate': extract_mfcc('templates/Template/Ternate.m4a', 'templates/ternate.wav'),
     }
 
-    input_data = extract_mfcc('templates/saya.wav')
+    input_data = extract_mfcc('templates/Testcases/Ternate/Recording.m4a', 'templates/Testcases/test1.wav')
     
     start_time = time.time()
     recognized_word = fast_predict(input_data, template_data)
