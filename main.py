@@ -1,14 +1,19 @@
 import numpy as np
 from python_speech_features import mfcc
 import scipy.io.wavfile as wav
-from fastdtw import fastdtw
 from multiprocessing import Pool
 from pydub import AudioSegment
 import time
+import os
 
 def extract_mfcc(audio_file, wav_file):
     track = AudioSegment.from_file(audio_file, format='m4a')
     file_handle = track.export(wav_file, format='wav')
+    (rate, sig) = wav.read(wav_file)
+    features = mfcc(sig, rate)
+    return features
+
+def extract_mfcc_wav(wav_file):
     (rate, sig) = wav.read(wav_file)
     features = mfcc(sig, rate)
     return features
@@ -85,33 +90,92 @@ def fast_predict(input_data, template_data):
 
     return prediction
 
+# if __name__ == '__main__':
+#     template_data = {
+#         'Bandung': extract_mfcc('templates/Template/Bandung.m4a', 'templates/bandung.wav'),
+#         'Semarang': extract_mfcc('templates/Template/Semarang.m4a', 'templates/semarang.wav'),
+#         'Palembang': extract_mfcc('templates/Template/Palembang.m4a', 'templates/palembang.wav'),
+#         'Medan': extract_mfcc('templates/Template/Medan.m4a', 'templates/medan.wav'),
+#         'Banjarmasin': extract_mfcc('templates/Template/Banjarmasin.m4a', 'templates/banjarmasin.wav'),
+#         'Palangkaraya': extract_mfcc('templates/Template/Palangkaraya.m4a', 'templates/palangkaraya.wav'),
+#         'Manado': extract_mfcc('templates/Template/Manado.m4a', 'templates/manado.wav'),
+#         'Kendari': extract_mfcc('templates/Template/Kendari.m4a', 'templates/kendari.wav'),
+#         'Fakfak': extract_mfcc('templates/Template/Fakfak.m4a', 'templates/fakfak.wav'),
+#         'Ternate': extract_mfcc('templates/Template/Ternate.m4a', 'templates/ternate.wav'),
+#     }
+
+#     test_folder = 'templates/Testcases'
+#     total_tests = 0
+#     correct_predictions = 0
+
+#     for folder_name in os.listdir(test_folder):
+#         folder_path = os.path.join(test_folder, folder_name)
+#         if os.path.isdir(folder_path):
+#             for audio_file in os.listdir(folder_path):
+#                 if audio_file.endswith('.m4a'):
+#                     audio_path = os.path.join(folder_path, audio_file)
+#                     input_data = extract_mfcc(audio_path, f'templates/Testcases/{folder_name}/{audio_file[:-4]}.wav')
+                    
+#                     start_time = time.time()
+#                     recognized_word = fast_predict(input_data, template_data)
+#                     end_time = time.time()
+
+#                     total_tests += 1
+#                     if recognized_word == folder_name:
+#                         correct_predictions += 1
+
+#                     print(f"Tested audio: {audio_file}")
+#                     print("Predicted label:", recognized_word)
+#                     print("Actual label:", folder_name)
+#                     print("Parallel Execution Time:", end_time - start_time)
+#                     print('-' * 30)
+
+#     accuracy = (correct_predictions / total_tests) * 100 if total_tests > 0 else 0
+#     print(f"Total Accuracy: {accuracy:.2f}%")
+
 if __name__ == '__main__':
     template_data = {
-        'bandung': extract_mfcc('templates/Template/Bandung.m4a', 'templates/bandung.wav'),
-        'semarang': extract_mfcc('templates/Template/Semarang.m4a', 'templates/semarang.wav'),
-        'palembang': extract_mfcc('templates/Template/Palembang.m4a', 'templates/palembang.wav'),
-        'medan': extract_mfcc('templates/Template/Medan.m4a', 'templates/medan.wav'),
-        'banjarmasin': extract_mfcc('templates/Template/Banjarmasin.m4a', 'templates/banjarmasin.wav'),
-        'palangkaraya': extract_mfcc('templates/Template/Palangkaraya.m4a', 'templates/palangkaraya.wav'),
-        'manado': extract_mfcc('templates/Template/Manado.m4a', 'templates/manado.wav'),
-        'kendari': extract_mfcc('templates/Template/Kendari.m4a', 'templates/kendari.wav'),
-        'fakfak': extract_mfcc('templates/Template/Fakfak.m4a', 'templates/fakfak.wav'),
-        'ternate': extract_mfcc('templates/Template/Ternate.m4a', 'templates/ternate.wav'),
+        'Bandung': extract_mfcc_wav('templates/bandung.wav'),
+        'Semarang': extract_mfcc_wav('templates/semarang.wav'),
+        'Palembang': extract_mfcc_wav('templates/palembang.wav'),
+        'Medan': extract_mfcc_wav('templates/medan.wav'),
+        'Banjarmasin': extract_mfcc_wav('templates/banjarmasin.wav'),
+        'Palangkaraya': extract_mfcc_wav('templates/palangkaraya.wav'),
+        'Manado': extract_mfcc_wav('templates/manado.wav'),
+        'Kendari': extract_mfcc_wav('templates/kendari.wav'),
+        'Fakfak': extract_mfcc_wav('templates/fakfak.wav'),
+        'Ternate': extract_mfcc_wav('templates/ternate.wav'),
     }
 
-    input_data = extract_mfcc('templates/Testcases/Ternate/Recording.m4a', 'templates/Testcases/test1.wav')
+    test_folder = 'templates/Testcases'
+    total_tests = 0
+    correct_predictions = 0
     
     start_time = time.time()
-    recognized_word = fast_predict(input_data, template_data)
-    end_time = time.time() 
-    print("Parallel Execution Time :", end_time - start_time)
-    print("Kata yang diucapkan:", recognized_word)
+    for folder_name in os.listdir(test_folder):
+        folder_path = os.path.join(test_folder, folder_name)
+        if os.path.isdir(folder_path):
+            for audio_file in os.listdir(folder_path):
+                if audio_file.endswith('.wav'):
+                    audio_path = os.path.join(folder_path, audio_file)
+                    input_data = extract_mfcc_wav(audio_path)
+                    
+                    recognized_word = fast_predict(input_data, template_data)
 
-    start_time = time.time()
-    recognized_word = predict(input_data, template_data)
-    end_time = time.time() 
-    print("Serial Execution Time:", end_time - start_time)
-    print("Kata yang diucapkan:", recognized_word)
+                    total_tests += 1
+                    if recognized_word == folder_name:
+                        correct_predictions += 1
+
+                    print(f"Tested audio: {audio_file}")
+                    print("Predicted label:", recognized_word)
+                    print("Actual label:", folder_name)
+                    print('-' * 30)
+
+    end_time = time.time()
+    accuracy = (correct_predictions / total_tests) * 100 if total_tests > 0 else 0
+    print("Parallel Execution Time:", end_time - start_time)
+    print(f"Total Data Tested: {total_tests}")
+    print(f"Total Accuracy: {accuracy:.2f}%")
 
 
 
