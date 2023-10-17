@@ -1,5 +1,5 @@
 import numpy as np
-from python_speech_features import mfcc
+from python_speech_features import mfcc, delta
 import scipy.io.wavfile as wav
 from multiprocessing import Pool
 from pydub import AudioSegment
@@ -13,10 +13,14 @@ def extract_mfcc(audio_file, wav_file):
     features = mfcc(sig, rate)
     return features
 
-def extract_mfcc_wav(wav_file):
-    (rate, sig) = wav.read(wav_file)
-    features = mfcc(sig, rate)
-    return features
+def extract_mfcc_wav(wav_file, n_fft=2048):
+    (rate, signal) = wav.read(wav_file)
+    mfcc_feat = mfcc(signal, rate, nfft=n_fft)
+    delta_feat = delta(mfcc_feat, 2)
+    delta_delta_feat = delta(delta_feat, 2)
+    combined_features = np.concatenate((mfcc_feat, delta_feat, delta_delta_feat), axis=1)
+
+    return combined_features
 
 def euclidean_distance(a, b):
     return np.sqrt(np.sum((a - b) ** 2))
